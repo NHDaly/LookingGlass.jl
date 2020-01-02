@@ -166,11 +166,12 @@ module_globals_names(m::Module; constness=:all, mutability=:all) =
     [n for n in names(m, all=true)
         if module_name_isglobal(m, n; constness=constness, mutability=mutability)]
 function module_name_isglobal(m::Module, n::Symbol; constness, mutability)
-    #m=Main.MV; n=:gv; constness=:all; mutability=:all
+    @assert constness ∈ (:all, :const, :nonconst)
+    @assert mutability ∈ (:all, :mutable, :immutable)
     try
         if String(n)[1] == '#' return false end
         v = Core.eval(m, n)
-        return !isa(v, Union{DataType, Function, Module}) &&
+        return !isa(v, Union{DataType, UnionAll, Function, Module}) &&
             (constness == :all || (constness == :const && _isconst_global(m, n) ||
                                    constness == :nonconst && !_isconst_global(m, n))) &&
             (mutability == :all || (mutability == :mutable && !isimmutable(v) ||
