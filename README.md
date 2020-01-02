@@ -3,7 +3,8 @@
 [![Build Status](https://travis-ci.com/NHDaly/LookingGlass.jl.svg?branch=master)](https://travis-ci.com/NHDaly/LookingGlass.jl)
 
 This package contains a collection of code reflection and investigation utilities that can
-be (potentially) useful for understanding, analyzing, and investigating julia code.
+be (potentially) useful for understanding, analyzing, and investigating julia code and the
+julia compiler.
 
 Most of the reflection functions are named hierarchically by what they reflect over. For
 example:
