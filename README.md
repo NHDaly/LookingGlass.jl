@@ -50,6 +50,23 @@ Base.KeySet for a Dict{Tuple{Method,DataType},Core.TypeMapEntry} with 3 entries.
   (isintegertype(::Type{T}) where T in Main at none:1, Tuple{typeof(isintegertype),Type{Float32}})
 ```
 
+And you can use `func_backedges(f)` to observe inlining, among other things.
+```julia
+julia> foo(x) = 2x
+foo (generic function with 1 method)
+
+julia> bar(x) = foo(x) + 1
+bar (generic function with 1 method)
+
+julia> foo(2)
+4
+
+julia> LookingGlass.func_backedges(foo)
+Dict{Any,Array{Any,1}} with 2 entries:
+  (foo(x) in Main at none:1, Tuple{typeof(foo),Int64}) => Any[]
+  :MethodTable                                         => Any[]
+```
+
 ## Module Utilities
 
 These functions provide reflection over Modules. This can be useful for example, when
