@@ -97,7 +97,7 @@ Backedges on a function's MethodTable means changes to _any methods_ (including 
 a method) will trigger recompilation of the target function.
 """
 function func_backedges(f)
-    out = Dict{Tuple, Vector{Any}}(
+    out = Dict{Tuple{Any,Type}, Vector{Any}}(
         # Method backedges
         k => try s.func.backedges catch ; [] end
         for (k,s) in func_specializations(f)
