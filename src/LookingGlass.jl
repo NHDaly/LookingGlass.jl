@@ -13,6 +13,7 @@ example:
 There are also other non-reflection-focused utilities, such as `@quot`.
 """
 module LookingGlass
+import Base.Iterators
 
 """
     @quot 2 + 3
@@ -95,12 +96,22 @@ Dict{Any,Array{Any,1}} with 2 entries:
 Backedges on a function's MethodTable means changes to _any methods_ (including adding
 a method) will trigger recompilation of the target function.
 """
-func_backedges(f) =
-    Dict(
-        :MethodTable => try methods(f).mt.backedges catch ; [] end,
-        (k => try s.func.backedges catch ; [] end
-         for (k,s) in func_specializations(f))...
+function func_backedges(f)
+    out = Dict{Tuple, Vector{Any}}(
+        # Method backedges
+        k => try s.func.backedges catch ; [] end
+        for (k,s) in func_specializations(f)
     )
+    # MethodTable backedges
+    for (typ, method) in
+            # MethodTable edges are pairs of (type, method_instance) (but stored as a flat array)
+            try Tuple.(Iterators.partition(methods(f).mt.backedges, 2)) catch ; [] end
+        methods = get!(out, (:MethodTable, typ), [])
+        push!(methods, method)
+    end
+    out
+end
+
 
 
 # ---------------------------------------------------------------------------
