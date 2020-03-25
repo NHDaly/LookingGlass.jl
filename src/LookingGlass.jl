@@ -14,6 +14,9 @@ There are also other non-reflection-focused utilities, such as `@quot`.
 """
 module LookingGlass
 import Base.Iterators
+using InteractiveUtils: subtypes
+
+export supertypes, print_typetree
 
 """
     @quot 2 + 3
@@ -235,5 +238,82 @@ module_recursive_globals_names(m::Module; constness=:all, mutability=:all) =
             if !isempty(names)
         ))
 
+"""
+    print_typetree(t::Type)
+
+Prints the type hierarchy rooted at the specified type. Note that this is intended to be used interactively, so the current implementation works by printing to `stdout`, and returns `nothing`.
+
+```julia-repl
+julia> print_typetree(Integer)
+Integer
+    Bool
+    Signed
+        BigInt
+        Int128
+        Int16
+        Int32
+        Int64
+        Int8
+    Unsigned
+        UInt128
+        UInt16
+        UInt32
+        UInt64
+        UInt8
+```
+"""
+function print_typetree(t::Type, depth=0)
+    println(repeat("    ", depth), t)
+
+    for s in subtypes(t)
+        print_typetree(s, depth + 1)
+    end
+
+    return nothing
+end
+
+
+
+"""
+    supertypes(x) :: Vector{Type}
+
+`supertypes(x::Type)` returns a `Vector{Type}` of all supertypes of `x`.
+
+If `x` is not a `Type`, `supertypes(x::T)` returns a `Vector{Type}` containing `T` and all supertypes of `T`.
+
+```julia-repl
+julia> supertypes(2)
+6-element Array{Type,1}:
+ Int64
+ Signed
+ Integer
+ Real
+ Number
+ Any
+
+julia> supertypes(Int64)
+5-element Array{Type,1}:
+ Signed
+ Integer
+ Real
+ Number
+ Any
+```
+"""
+function supertypes end
+
+function supertypes(t::Type)
+    t0 = t
+    t1 = supertype(t)
+    result = Type[]
+    while t1 ≠ t0 
+        push!(result, t1)
+        t0, t1 = t1, supertype(t1)
+    end
+    return result
+end
+
+supertypes(x::T) where T = [T, supertypes(T)...]
+    
 
 end # module
