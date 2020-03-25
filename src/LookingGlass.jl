@@ -279,7 +279,7 @@ end
 
 `supertypes(x::Type)` returns a `Vector{Type}` of all supertypes of `x`.
 
-If `x` is not a `Type`, `supertypes(x)` returns a `Vector{Type}` of `T` such that `x :: T`. 
+If `x` is not a `Type`, `supertypes(x::T)` returns a `Vector{Type}` containing `T` and all supertypes of `T`.
 
 ```julia-repl
 julia> supertypes(2)
@@ -302,7 +302,7 @@ julia> supertypes(Int64)
 """
 function supertypes end
 
-function supertypes(t::Type, acc=[])
+function supertypes(t::Type)
     t0 = t
     t1 = supertype(t)
     result = Type[]
@@ -313,10 +313,7 @@ function supertypes(t::Type, acc=[])
     return result
 end
 
-function supertypes(x::T) where T
-    s = supertypes(T)
-    pushfirst!(s, T)
-end
+supertypes(x::T) where T = [T, supertypes(T)...]
     
 
 end # module
