@@ -313,10 +313,7 @@ function supertypes(t::Type)
     return result
 end
 
-function supertypes(x::T) where T
-    s = supertypes(T)
-    pushfirst!(s, T)
-end
+supertypes(x::T) where T = [T, supertypes(T)...]
     
 
 end # module
