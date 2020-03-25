@@ -302,7 +302,7 @@ julia> supertypes(Int64)
 """
 function supertypes end
 
-function supertypes(t::Type, acc=[])
+function supertypes(t::Type)
     t0 = t
     t1 = supertype(t)
     result = Type[]
