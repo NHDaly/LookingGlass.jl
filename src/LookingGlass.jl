@@ -16,7 +16,7 @@ module LookingGlass
 import Base.Iterators
 import InteractiveUtils: subtypes
 
-export supertypes, typetree
+export supertypes, print_typetree
 
 """
     @quot 2 + 3
@@ -239,12 +239,12 @@ module_recursive_globals_names(m::Module; constness=:all, mutability=:all) =
         ))
 
 """
-    typetree(t::Type)
+    print_typetree(t::Type)
 
 Prints the type hierarchy rooted at the specified type. Note that this is intended to be used interactively, so the current implementation works by printing to `stdout`, and returns `nothing`.
 
 ```julia-repl
-julia> typetree(Integer)
+julia> print_typetree(Integer)
 Integer
     Bool
     Signed
@@ -262,11 +262,11 @@ Integer
         UInt8
 ```
 """
-function typetree(t::Type, depth=0)
+function print_typetree(t::Type, depth=0)
     println(repeat("    ", depth), t)
 
     for s in subtypes(t)
-        typetree(s, depth + 1)
+        print_typetree(s, depth + 1)
     end
 
     return nothing
