@@ -279,7 +279,7 @@ end
 
 `supertypes(x::Type)` returns a `Vector{Type}` of all supertypes of `x`.
 
-If `x` is not a `Type`, `supertypes(x)` returns a `Vector{Type}` of `T` such that `x :: T`. 
+If `x` is not a `Type`, `supertypes(x::T)` returns a `Vector{Type}` containing `T` and all supertypes of `T`.
 
 ```julia-repl
 julia> supertypes(2)
