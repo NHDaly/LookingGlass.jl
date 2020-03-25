@@ -14,7 +14,7 @@ There are also other non-reflection-focused utilities, such as `@quot`.
 """
 module LookingGlass
 import Base.Iterators
-import InteractiveUtils: subtypes
+using InteractiveUtils: subtypes
 
 export supertypes, print_typetree
 
