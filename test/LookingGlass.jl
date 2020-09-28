@@ -7,10 +7,13 @@ module MF
     module Inner
         f() = 1
     end
+
+    g = 2
 end
 
 @test Set(LookingGlass.module_functions_names(MF)) == Set([:foo, :bar])
 @test Set(LookingGlass.module_functions(MF)) == Set([MF.foo, MF.bar])
+@test Set(LookingGlass.module_objects(MF)) ⊇ Set([MF.g, MF.Inner, typeof(MF.foo), typeof(MF.bar), MF.foo, MF.bar])
 
 module MV
     gv = 2
