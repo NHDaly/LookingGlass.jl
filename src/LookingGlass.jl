@@ -152,6 +152,20 @@ name_is_submodule(m::Module, s::Symbol) =
     isdefined(m, s) && isa(Core.eval(m,s), Module) && nameof(m) != s
 #module_is_submodule(m::Module, s::Module) = issubmodule(m, nameof(s))  # BROKEN: might just be a name collision. This is not the right way to check this.
 
+"""
+    module_objects(m::Module)
+Return a list of the names of _all reachable objects_ in Module `m`.
+
+There are more-specific helper functions as well:
+ - `module_submodules(m, n)`
+ - `module_functions_names(m, n)`
+ - `module_globals(m, n)`
+ - ...
+"""
+module_objects(m::Module) = [
+    Core.eval(m, n)
+    for n in names(m, all=true)
+    if isdefined(m, n)]
 
 """
     module_functions_names(m::Module) -> Vector{Symbol}
