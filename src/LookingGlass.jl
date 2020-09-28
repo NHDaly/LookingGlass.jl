@@ -163,12 +163,10 @@ module_functions_names(m::Module) =
      if module_name_isfunction(m, name)]
 
 function module_name_isfunction(m::Module, name::Symbol)
-    try
-        return name ∉ (:include, :eval) && Core.eval(m, name) isa Function
-    catch e
-        e isa UndefVarError && return false
-        rethrow()
-    end
+    # TODO: Why is this isdefined() check needed? Why can `names(all=true)` return names
+    # that aren't defined?
+    return isdefined(m, name) &&
+        name ∉ (:include, :eval) && Core.eval(m, name) isa Function
 end
 
 """
