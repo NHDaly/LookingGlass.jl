@@ -160,7 +160,15 @@ Return a list of the names of all functions defined in Module `m`.
 module_functions_names(m::Module) =
     [name
      for name in names(m, all=true)
-     if Core.eval(m, name) isa Function && name ∉ (:include, :eval)]
+     if module_name_isfunction(m, name)]
+
+function module_name_isfunction(m::Module, name::Symbol)
+    # TODO: Why is this isdefined() check needed? Why can `names(all=true)` return names
+    # that aren't defined?
+    return isdefined(m, name) &&
+        name ∉ (:include, :eval) && Core.eval(m, name) isa Function
+end
+
 """
     module_functions(m::Module) -> Dict{Symbol, Function}
 Return a list of all the Function objects defined in Module `m`.
@@ -204,6 +212,7 @@ function _isconst_global(m::Module, s::Symbol)
     b = _getbinding(m,s)
     b != nothing && b.constp
 end
+
 #--- Compiler-Internal Julia Binding struct ------------------------------------------------
 # Stores information about a variable binding, which we can interrogate for information
 # such as whether a variable is a global `const`.
@@ -306,7 +315,7 @@ function supertypes(t::Type)
     t0 = t
     t1 = supertype(t)
     result = Type[]
-    while t1 ≠ t0 
+    while t1 ≠ t0
         push!(result, t1)
         t0, t1 = t1, supertype(t1)
     end
@@ -314,6 +323,6 @@ function supertypes(t::Type)
 end
 
 supertypes(x::T) where T = [T, supertypes(T)...]
-    
+
 
 end # module
