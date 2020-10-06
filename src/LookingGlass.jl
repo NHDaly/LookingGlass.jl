@@ -31,7 +31,7 @@ macro quot(e) QuoteNode(e) end
 # ---------------------------------------------------------------------------
 
 """
-    func_specializations(f) -> Dict(MethodInstance => Method)
+    func_specializations(f[, tt]) -> Dict(MethodInstance => Method)
 
 Return all the specializations (MethodInstances) of each method of the given function (or
 callable object), if there are any.
@@ -57,10 +57,17 @@ function func_specializations end
 func_specializations(f) =
     Dict(mi => m
         for m in methods(f).ms
-        for mi in _iterate_method_specializations(m)
+        for mi in _method_specializations(m)
+    )
+func_specializations(f, tt) =
+    Dict(mi => m
+        for m in methods(f, tt).ms
+        for mi in _method_specializations(m)
     )
 
-function _iterate_method_specializations(m)
+method_specializations(m) = collect(_method_specializations(m))
+
+function _method_specializations(m::Method)
     s = m.specializations
     if VERSION > v"1.5-"
         return (s[i] for i in 1:length(s) if isassigned(s, i))
