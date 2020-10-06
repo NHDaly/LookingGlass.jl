@@ -16,9 +16,15 @@ end
 @test Set(LookingGlass.module_objects(MF)) ⊇ Set([MF.g, MF.Inner, typeof(MF.foo), typeof(MF.bar), MF.foo, MF.bar])
 
 @testset "func_specializations()" begin
-    @test length(Set(LookingGlass.func_specializations(MF.foo))) == 0
+    @test length(LookingGlass.func_specializations(MF.foo)) == 0
     MF.foo(2)
-    @test length(Set(LookingGlass.func_specializations(MF.foo))) == 1
+    @test length(LookingGlass.func_specializations(MF.foo)) == 1
+end
+
+@testset "func_backedges()" begin
+    @test length(first(LookingGlass.func_backedges(MF.foo))[2]) == 0
+    MF.bar(2)
+    @test length(first(LookingGlass.func_backedges(MF.foo))[2]) == 1
 end
 
 module MV
