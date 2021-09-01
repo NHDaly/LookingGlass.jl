@@ -147,20 +147,27 @@ StackOverflowError, since recursively listing submodules of `Core` or `Base` inf
 """
 module_submodules(m::Module; recursive=true, base=false) =
     if recursive
-        _module_recursive_submodules(m, base=base)
+        _module_recursive_submodules(m, base=base, seen=Set{Module}())
     else
         _module_direct_submodules(m, base=base)
     end
 
-_module_recursive_submodules(m; base) = collect(Iterators.flatten(
-    [x, _module_recursive_submodules(x, base=base)...]
-        for x in _module_direct_submodules(m, base=base)
-    ))
-_module_direct_submodules(m; base) =
+function _module_recursive_submodules(m; base, seen)
+    submodules = _module_direct_submodules(m, base=base; seen=seen)
+    for m in submodules
+        push!(seen, m)
+    end
+    modules = collect(Iterators.flatten(
+        [x, _module_recursive_submodules(x, base=base, seen=seen)...]
+            for x in submodules
+        ))
+    return modules
+end
+_module_direct_submodules(m; base, seen) =
     Module[submodule
         for x in filter(x->name_is_submodule(m,x), names(m, all=true))
         for submodule in (Core.eval(m, x),)  # assign to temporary variable (comprehensions are weird)
-        if submodule ∉ (Base, Core)]
+        if submodule ∉ seen]
 
 name_is_submodule(m::Module, s::Symbol) =
     isdefined(m, s) && isa(Core.eval(m,s), Module) && nameof(m) != s
