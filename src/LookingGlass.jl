@@ -236,6 +236,18 @@ Return a Dict mapping the name to the value of all global variables in Module `m
 """
 module_globals(m::Module) = Dict(n => Core.eval(m, n) for n in module_globals_names(m))
 
+"""
+    module_recursive_globals(m::Module) -> Dict{Tuple{Module,Symbol}, Any}
+Return a Dict mapping the fully qualified name to the value of all global variables in
+Module `m` and all its recursive submodules.
+"""
+function module_recursive_globals(m::Module)
+    return Dict((mod,n) => Core.eval(mod, n)
+                for (mod,names) in module_recursive_globals_names(m)
+                for n in names
+                )
+end
+
 function _isconst_global(m::Module, s::Symbol)
     b = _getbinding(m,s)
     b != nothing && b.constp
