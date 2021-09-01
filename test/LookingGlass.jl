@@ -50,3 +50,13 @@ end
         MV => sort([]),
         MV.Inner => sort([:i_vec]),
         )
+
+@test LookingGlass.module_recursive_globals(MV) ==
+    Dict(
+        (MV, :gv) => MV.gv,
+        (MV, :cv) => MV.cv,
+        (MV, :vec) => MV.vec,
+        (MV.Inner, :i_x) => MV.Inner.i_x,
+        (MV.Inner, :i_c) => MV.Inner.i_c,
+        (MV.Inner, :i_vec) => MV.Inner.i_vec,
+        )
