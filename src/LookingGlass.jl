@@ -282,7 +282,9 @@ end
 Return a list of the names of all global variables for each submodule in Module `m`.
 
 Defaults to all globals, can toggle only const-globals or nonconst-globals via keyword args.
-See [`module_recursive_globals`](@ref).
+See Also:
+- [`module_globals`](@ref)
+- [`module_recursive_globals`](@ref)
 """
 module_recursive_globals_names(m::Module; constness=:all, mutability=:all, kwargs...) =
     merge!(
@@ -291,7 +293,7 @@ module_recursive_globals_names(m::Module; constness=:all, mutability=:all, kwarg
             sm => names
             for sm in module_submodules(m; recursive=true, kwargs...)
             for names in (module_globals_names(sm; constness=constness, mutability=mutability, kwargs...),)
-            if !isempty(names)
+            #if !isempty(names)
         ))
 
 """

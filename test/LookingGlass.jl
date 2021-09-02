@@ -55,6 +55,7 @@ end
     Dict(
         MV => sort([]),
         MV.Inner => sort([:i_vec]),
+        MV.A => sort([]),
         )
 
 @test LookingGlass.module_recursive_globals(MV) ==
