@@ -158,7 +158,7 @@ function _module_recursive_submodules(m; base, seen, kwargs...)
         push!(seen, m)
     end
     modules = collect(Iterators.flatten(
-        [x, _module_recursive_submodules(x, base=base, seen=seen)...]
+        [x, _module_recursive_submodules(x; base=base, seen=seen, kwargs...)...]
             for x in submodules
         ))
     return modules
