@@ -145,15 +145,15 @@ By default, it skips Julia's `Base` and `Core` modules, but you can enable those
 NOTE: currently, `module_submodules(Main, recursive=true, base=true)` will trigger a
 StackOverflowError, since recursively listing submodules of `Core` or `Base` infinite loops.
 """
-module_submodules(m::Module; recursive=true, base=false) =
+module_submodules(m::Module; recursive=true, base=false, kwargs...) =
     if recursive
-        _module_recursive_submodules(m, base=base, seen=Set{Module}())
+        _module_recursive_submodules(m; base=base, seen=Set{Module}(), kwargs...)
     else
-        _module_direct_submodules(m, base=base)
+        _module_direct_submodules(m; base=base, kwargs...)
     end
 
-function _module_recursive_submodules(m; base, seen)
-    submodules = _module_direct_submodules(m, base=base; seen=seen)
+function _module_recursive_submodules(m; base, seen, kwargs...)
+    submodules = _module_direct_submodules(m; base=base, seen=seen, kwargs...)
     for m in submodules
         push!(seen, m)
     end
@@ -163,9 +163,9 @@ function _module_recursive_submodules(m; base, seen)
         ))
     return modules
 end
-_module_direct_submodules(m; base, seen) =
+_module_direct_submodules(m; base, seen, kwargs...) =
     Module[submodule
-        for x in filter(x->name_is_submodule(m,x), names(m, all=true))
+        for x in filter(x->name_is_submodule(m,x), names(m; all=true, kwargs...))
         for submodule in (Core.eval(m, x),)  # assign to temporary variable (comprehensions are weird)
         if submodule ∉ seen]
 
@@ -219,8 +219,8 @@ argument to one of `constness=:const` or `constness=:nonconst`.
 To return only mutable globals or only immutable globals, set the `mutability=` keyword
 argument to one of `mutability=:mutable` or `mutability=:immutable`.
 """
-module_globals_names(m::Module; constness=:all, mutability=:all) =
-    [n for n in names(m, all=true)
+module_globals_names(m::Module; constness=:all, mutability=:all, kwargs...) =
+    [n for n in names(m, all=true; kwargs...)
         if module_name_isglobal(m, n; constness=constness, mutability=mutability)]
 function module_name_isglobal(m::Module, n::Symbol; constness, mutability)
     @assert constness ∈ (:all, :const, :nonconst)
@@ -248,9 +248,9 @@ module_globals(m::Module) = Dict(n => Core.eval(m, n) for n in module_globals_na
 Return a Dict mapping the fully qualified name to the value of all global variables in
 Module `m` and all its recursive submodules.
 """
-function module_recursive_globals(m::Module)
+function module_recursive_globals(m::Module; kwargs...)
     return Dict((mod,n) => Core.eval(mod, n)
-                for (mod,names) in module_recursive_globals_names(m)
+                for (mod,names) in module_recursive_globals_names(m; kwargs...)
                 for n in names
                 )
 end
@@ -284,13 +284,13 @@ Return a list of the names of all global variables for each submodule in Module 
 Defaults to all globals, can toggle only const-globals or nonconst-globals via keyword args.
 See [`module_recursive_globals`](@ref).
 """
-module_recursive_globals_names(m::Module; constness=:all, mutability=:all) =
+module_recursive_globals_names(m::Module; constness=:all, mutability=:all, kwargs...) =
     merge!(
-        Dict(m => module_globals_names(m, constness=constness, mutability=mutability)),
+        Dict(m => module_globals_names(m; constness=constness, mutability=mutability, kwargs...)),
         Dict(
             sm => names
-            for sm in module_submodules(m, recursive=true)
-            for names in (module_globals_names(sm; constness=constness, mutability=mutability),)
+            for sm in module_submodules(m; recursive=true, kwargs...)
+            for names in (module_globals_names(sm; constness=constness, mutability=mutability, kwargs...),)
             if !isempty(names)
         ))
 
