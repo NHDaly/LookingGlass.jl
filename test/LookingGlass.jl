@@ -31,10 +31,15 @@ module MV
     gv = 2
     const cv = 2
     vec = []
+    module A
+        g_a = 1
+    end
     module Inner
         i_x = 3
         const i_c = 2
         const i_vec = [2]
+
+        import ..A
     end
 end
 
@@ -42,6 +47,7 @@ end
     Dict(
         MV => sort([:gv, :cv, :vec]),
         MV.Inner => sort([:i_x, :i_c, :i_vec]),
+        MV.A => sort([:g_a]),
         )
 
 @test LookingGlass.module_recursive_globals_names(MV,
@@ -59,4 +65,17 @@ end
         (MV.Inner, :i_x) => MV.Inner.i_x,
         (MV.Inner, :i_c) => MV.Inner.i_c,
         (MV.Inner, :i_vec) => MV.Inner.i_vec,
+        (MV.A, :g_a) => MV.A.g_a,
+        )
+
+@test LookingGlass.module_recursive_globals(MV, imported=true) ==
+    Dict(
+        (MV, :gv) => MV.gv,
+        (MV, :cv) => MV.cv,
+        (MV, :vec) => MV.vec,
+        (MV.Inner, :i_x) => MV.Inner.i_x,
+        (MV.Inner, :i_c) => MV.Inner.i_c,
+        (MV.Inner, :i_vec) => MV.Inner.i_vec,
+        (MV.A, :g_a) => MV.A.g_a,
+        (MV.Inner.A, :g_a) => MV.Inner.A.g_a,
         )
