@@ -147,20 +147,27 @@ StackOverflowError, since recursively listing submodules of `Core` or `Base` inf
 """
 module_submodules(m::Module; recursive=true, base=false) =
     if recursive
-        _module_recursive_submodules(m, base=base)
+        _module_recursive_submodules(m, base=base, seen=Set{Module}())
     else
         _module_direct_submodules(m, base=base)
     end
 
-_module_recursive_submodules(m; base) = collect(Iterators.flatten(
-    [x, _module_recursive_submodules(x, base=base)...]
-        for x in _module_direct_submodules(m, base=base)
-    ))
-_module_direct_submodules(m; base) =
+function _module_recursive_submodules(m; base, seen)
+    submodules = _module_direct_submodules(m, base=base; seen=seen)
+    for m in submodules
+        push!(seen, m)
+    end
+    modules = collect(Iterators.flatten(
+        [x, _module_recursive_submodules(x, base=base, seen=seen)...]
+            for x in submodules
+        ))
+    return modules
+end
+_module_direct_submodules(m; base, seen) =
     Module[submodule
         for x in filter(x->name_is_submodule(m,x), names(m, all=true))
         for submodule in (Core.eval(m, x),)  # assign to temporary variable (comprehensions are weird)
-        if submodule ∉ (Base, Core)]
+        if submodule ∉ seen]
 
 name_is_submodule(m::Module, s::Symbol) =
     isdefined(m, s) && isa(Core.eval(m,s), Module) && nameof(m) != s
@@ -235,6 +242,18 @@ end
 Return a Dict mapping the name to the value of all global variables in Module `m`.
 """
 module_globals(m::Module) = Dict(n => Core.eval(m, n) for n in module_globals_names(m))
+
+"""
+    module_recursive_globals(m::Module) -> Dict{Tuple{Module,Symbol}, Any}
+Return a Dict mapping the fully qualified name to the value of all global variables in
+Module `m` and all its recursive submodules.
+"""
+function module_recursive_globals(m::Module)
+    return Dict((mod,n) => Core.eval(mod, n)
+                for (mod,names) in module_recursive_globals_names(m)
+                for n in names
+                )
+end
 
 function _isconst_global(m::Module, s::Symbol)
     b = _getbinding(m,s)
