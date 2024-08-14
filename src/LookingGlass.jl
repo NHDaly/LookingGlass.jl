@@ -231,12 +231,14 @@ function module_name_isglobal(m::Module, n::Symbol; constness, mutability)
         return !isa(v, Union{DataType, UnionAll, Function, Module}) &&
             (constness == :all || (constness == :const && _isconst_global(m, n) ||
                                    constness == :nonconst && !_isconst_global(m, n))) &&
-            (mutability == :all || (mutability == :mutable && !isimmutable(v) ||
-                                    mutability == :immutable && isimmutable(v)))
+            (mutability == :all || (mutability == :mutable && is_mutable_value(v) ||
+                                    mutability == :immutable && !is_mutable_value(v)))
     catch
         false
     end
 end
+is_mutable_value(v) = ismutable(v) && !(v isa String)
+
 """
     module_globals(m::Module) -> Dict{Symbol, Any}
 Return a Dict mapping the name to the value of all global variables in Module `m`.
